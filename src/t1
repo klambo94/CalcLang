@@ -1,0 +1,6 @@
+x = 3
+y = 4
+x = x + y
+z = x * 2
+w = sin(angle)
+show w

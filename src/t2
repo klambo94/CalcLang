@@ -1,0 +1,4 @@
+show x +  y
+msg "triangles are cool"
+newline
+c = sqrt(a*a + b*b + c*c)
