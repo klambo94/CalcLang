@@ -7,14 +7,14 @@ public class DisplayTest {
 
     @Test
     public void testDisplayMsg() throws Exception {
-        new DisplayNode("msg", new Node(new Token("string", "Display Message Test"))).executeNode();
+        new DisplayNode("msg", new StatementNode(new Token("string", "Display Message Test"))).executeNode();
     }
 
     @Test
     public void testDisplayShow()  throws Exception {
         Token digitTenToken = new Token("digit", "10");
         Token variableTenToken = new Token("id", "x");
-        new AssignmentNode("assignment", new Node(variableTenToken), new Node(digitTenToken)).executeNode();
-        new DisplayNode("show", new Node(variableTenToken)).executeNode();
+        new AssignmentNode("assignment", new StatementNode(variableTenToken), new StatementNode(digitTenToken)).executeNode();
+        new DisplayNode("show", new StatementNode(variableTenToken)).executeNode();
     }
 }

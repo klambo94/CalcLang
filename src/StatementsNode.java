@@ -9,7 +9,9 @@ public class StatementsNode extends Node {
 
     @Override
     public void executeNode() throws  Exception {
-        first.executeNode();
+        if(first != null) {
+            first.executeNode();
+        }
         if(second != null) {
             second.executeNode();
         }

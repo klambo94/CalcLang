@@ -17,8 +17,8 @@ public class InputNode extends Node{
         String outputText = getFirstChildInfo();
         String variable = getSecondChildInfo();
 
-        System.out.print(outputText);
-        double inputValue = getUserInput();
+
+        double inputValue = getUserInput(outputText);
 
 
         if (variableMemoryMap != null) {
@@ -50,18 +50,29 @@ public class InputNode extends Node{
         return infoText;
     }
 
-    private double getUserInput()  throws  Exception {
+    private double getUserInput(String outputText)  throws  Exception {
         Scanner keys = new Scanner(System.in);
         boolean badInfoEntered = true;
         double returnValue = -1;
+
         while(badInfoEntered) {
-            try {
-                returnValue = keys.nextDouble();
+            System.out.print(outputText);
+            String input = keys.nextLine();
+            if(isNumeric(input)){
+                returnValue = Double.parseDouble(input);
                 badInfoEntered = false;
-            } catch(Exception e) {
-                System.out.print("Not a number. Please enter a digit");
             }
         }
         return returnValue;
+    }
+
+    public static boolean isNumeric(String str) {
+        try {
+            Double.parseDouble(str);
+        } catch (NumberFormatException e) {
+            System.out.println("Please enter a number");
+            return false;
+        }
+        return true;
     }
 }

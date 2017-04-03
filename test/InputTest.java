@@ -11,7 +11,7 @@ public class InputTest {
         Token inputString = new Token("keyword", "x=");
         Token variable = new Token("id", "x");
 
-        InputNode inputNode = new InputNode("input", new Node(inputString), new Node(variable));
+        InputNode inputNode = new InputNode("input", new StatementNode(inputString), new StatementNode(variable));
 
         System.out.println("Executing Node");
         inputNode.executeNode();

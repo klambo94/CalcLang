@@ -13,7 +13,7 @@ public class AssignmentTest {
         Token variableToken = new Token("id", "x");
         Token valueToken = new Token("digit", "3");
         AssignmentNode assignmentNode = new AssignmentNode("",
-                new Node(variableToken), new Node(valueToken));
+                new StatementNode(variableToken), new StatementNode(valueToken));
         assignmentNode.executeNode();
         Map<String, Double> varMap = assignmentNode.getVariableMemoryMap();
 

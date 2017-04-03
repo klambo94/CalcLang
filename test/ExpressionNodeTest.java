@@ -26,8 +26,8 @@ public class ExpressionNodeTest {
         addToken = new Token("mathSym", "+");
         subtractToken = new Token("mathSym", "-");
 
-        new AssignmentNode("assignment", new Node(variableTenToken), new Node(digitTenToken)).executeNode();
-        new AssignmentNode("assignment", new Node(variableThreeToken), new Node(digitThreeToken)).executeNode();
+        new AssignmentNode("assignment", new StatementNode(variableTenToken), new StatementNode(digitTenToken)).executeNode();
+        new AssignmentNode("assignment", new StatementNode(variableThreeToken), new StatementNode(digitThreeToken)).executeNode();
 
     }
 
@@ -46,9 +46,9 @@ public class ExpressionNodeTest {
     @Test
     public void testExecuteExpressionForReturnSimpleExpressionStatement() throws Exception {
         ExpressionNode addExpressionStatement = new ExpressionNode("Expression Node",
-                new ExpressionNode(digitThreeToken), new Node(addToken), new ExpressionNode(digitThreeToken));
+                new ExpressionNode(digitThreeToken), new StatementNode(addToken), new ExpressionNode(digitThreeToken));
         ExpressionNode subMultExpressionStatement = new ExpressionNode("Expression Node",
-                new ExpressionNode(digitTenToken), new Node(subtractToken), new ExpressionNode(digitThreeToken));
+                new ExpressionNode(digitTenToken), new StatementNode(subtractToken), new ExpressionNode(digitThreeToken));
 
         Assert.assertTrue(addExpressionStatement.executeNodeForReturn() == 6);
         Assert.assertTrue(subMultExpressionStatement.executeNodeForReturn() == 7);
@@ -57,10 +57,10 @@ public class ExpressionNodeTest {
     @Test
     public void testExecuteExpressionForReturnComplexTermExpressionStatement() throws Exception {
         ExpressionNode multipleExpression = new ExpressionNode("Expression Node",
-                new ExpressionNode(digitTenToken), new Node(multiplyToken),
+                new ExpressionNode(digitTenToken), new StatementNode(multiplyToken),
                 new ExpressionNode(digitThreeToken));
         ExpressionNode divideExpression = new ExpressionNode("Expression Node",
-                new ExpressionNode(digitTenToken), new Node(divideToken),
+                new ExpressionNode(digitTenToken), new StatementNode(divideToken),
                 new ExpressionNode(digitThreeToken));
         ExpressionNode multTerm = new ExpressionNode("Expression Node", multipleExpression);
         ExpressionNode dividTerm = new ExpressionNode("Expression Node", divideExpression);
@@ -72,21 +72,21 @@ public class ExpressionNodeTest {
     @Test
     public void testExecuteExpressionForReturnComplexExpressionStatement() throws Exception {
         ExpressionNode multipleExpression = new ExpressionNode("Expression Node",
-                new ExpressionNode(digitTenToken), new Node(multiplyToken),
+                new ExpressionNode(digitTenToken), new StatementNode(multiplyToken),
                 new ExpressionNode(variableThreeToken));
         ExpressionNode divideExpression = new ExpressionNode("Expression Node",
-                new ExpressionNode(digitThreeToken), new Node(divideToken),
+                new ExpressionNode(digitThreeToken), new StatementNode(divideToken),
                 new ExpressionNode(variableTenToken));
 
         ExpressionNode addDivideExpressionStatement = new ExpressionNode("Expression Node",
-                new ExpressionNode(variableThreeToken), new Node(addToken), divideExpression);
+                new ExpressionNode(variableThreeToken), new StatementNode(addToken), divideExpression);
         ExpressionNode subDivideExpressionStatement = new ExpressionNode("Expression Node",
-                new ExpressionNode(variableTenToken), new Node(subtractToken), divideExpression);
+                new ExpressionNode(variableTenToken),new StatementNode(subtractToken), divideExpression);
 
         ExpressionNode addMultiExpressionStatement = new ExpressionNode("Expression Node",
-                new ExpressionNode(variableThreeToken), new Node(addToken), multipleExpression);
+                new ExpressionNode(variableThreeToken),new StatementNode(addToken), multipleExpression);
         ExpressionNode subMultiExpressionStatement = new ExpressionNode("Expression Node",
-                new ExpressionNode(variableTenToken), new Node(subtractToken), multipleExpression);
+                new ExpressionNode(variableTenToken),new StatementNode(subtractToken), multipleExpression);
 
         Assert.assertTrue(addDivideExpressionStatement.executeNodeForReturn() == 3.3);
         Assert.assertTrue(subDivideExpressionStatement.executeNodeForReturn() == 9.7);
@@ -97,9 +97,9 @@ public class ExpressionNodeTest {
     @Test
     public void testExecuteExpressionsForReturnTermThatIsNegativeFactor () throws Exception {
         ExpressionNode negativeTenFactor = new ExpressionNode("Expression Node",
-                new Node(subtractToken), new ExpressionNode(variableTenToken));
+               new StatementNode(subtractToken), new ExpressionNode(variableTenToken));
         ExpressionNode negativeThreeFactor = new ExpressionNode("Expression Node",
-                new Node(subtractToken), new ExpressionNode(variableThreeToken));
+               new StatementNode(subtractToken), new ExpressionNode(variableThreeToken));
 
         Assert.assertTrue(negativeThreeFactor.executeNodeForReturn() == -3);
         Assert.assertTrue(negativeTenFactor.executeNodeForReturn() == -10);
@@ -112,13 +112,13 @@ public class ExpressionNodeTest {
         Token sqrtBuiltInFunction = new Token("bif", "sqrt");
 
         ExpressionNode mathThreeFunctionNode = new ExpressionNode("Expression Node",
-                new Node(variableThreeToken), new Node(multiplyToken), new Node(variableThreeToken));
+               new StatementNode(variableThreeToken),new StatementNode(multiplyToken),new StatementNode(variableThreeToken));
         ExpressionNode sinBuiltInFunctionExpression = new ExpressionNode("Expression Node",
-                new Node(sinBuiltInFunction), mathThreeFunctionNode);
+               new StatementNode(sinBuiltInFunction), mathThreeFunctionNode);
         ExpressionNode cosBuiltInFunctionExpression = new ExpressionNode("Expression Node",
-                new Node(cosBuiltInFunction), mathThreeFunctionNode);
+               new StatementNode(cosBuiltInFunction), mathThreeFunctionNode);
         ExpressionNode sqrtBuiltInFunctionExpression = new ExpressionNode( "ExpressionNode",
-                new Node(sqrtBuiltInFunction), mathThreeFunctionNode);
+               new StatementNode(sqrtBuiltInFunction), mathThreeFunctionNode);
 
 
         Assert.assertTrue(sinBuiltInFunctionExpression.executeNodeForReturn() == 0.4121184852417566);

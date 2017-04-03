@@ -5,6 +5,8 @@
 */
 
 
+import java.util.concurrent.ExecutionException;
+
 public class Parser {
 
     private Lexer lex;
@@ -18,11 +20,17 @@ public class Parser {
         Token token = lex.getToken();
         Node first = null;
         Node second = null;
+        try{
+            if(!token.isKind("eof")){
+                lex.putBack(token);
+                first = parseStatement();
+                second = parseStatements();
 
-        if(!token.isKind("eof")){
-            first = parseStatement();
-            second = parseStatements();
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
+
         return new StatementsNode("Statements", first, second);
     }
 
@@ -31,17 +39,17 @@ public class Parser {
         Node first = null;
         Token token = lex.getToken();
 
-
         if(token.isKind("id")) {
             lex.putBack(token);
            first = createAssignmentNode();
         } else if(token.isKind("keyword")) {
-            token = lex.getToken();
-            first = createKeyWordNode();
-        } else {
             lex.putBack(token);
+            first = createKeyWordNode();
+        } else if(token.getDetails().equals(")")){
+            System.out.println("consuming uneeded symbol: " + token.getDetails());
         }
-        return new StatementNode("Statements" , first);
+
+        return new StatementNode("Statement" , first);
 
     }
 
@@ -89,31 +97,50 @@ public class Parser {
         }
     }
 
-    private Node parseExpression () {
+    private Node parseExpression () throws Exception {
         System.out.println("----------------------> Parsing Expression");
         Token token = lex.getToken();
         Node first = null;
+        Node second = null;
+        Node third = null;
         Node[] children;
-        if(token.isKind("id") || token.isKind("digit")){
-            Token nextToken = lex.getToken();
-            if(nextToken.getDetails().equals("+")||
-                    nextToken.getDetails().equals("-")){
-                lex.putBack(nextToken);
-                lex.putBack(token);
 
-                children = parseExpressionOperation();
-            } else {
-                lex.putBack(token);
-                lex.putBack(nextToken);
-                parseTerm(); //TODO: Save this into a variable not sure what yet.
-            }
+        Token nextToken = lex.getToken();
+        if(nextToken.getDetails().equals("+")||
+                nextToken.getDetails().equals("-")) {
+            lex.putBack(nextToken);
+            lex.putBack(token);
+
+            children = parseExpressionOperation();
+        } else {
+            lex.putBack(nextToken);
+            lex.putBack(token);
+            children = parseTerm();
         }
 
-        return new ExpressionNode(null);
+        if(children.length >= 1) {
+            first = children[0];
+        }
+
+        if(children.length >= 2) {
+            second = children[1];
+        }
+
+        if(children.length == 3) {
+            third = children[2];
+        }
+        if(first != null && (second == null && third == null)){
+            return new ExpressionNode("Expression Node", first);
+        } else if(first != null && second != null && third == null) {
+            return new ExpressionNode("Expression Node", first, second);
+        } else {
+            return new ExpressionNode("Expression Node", first, second, third);
+        }
+
     }
 
-    private Node[] parseExpressionOperation() {
-        Node first= parseTerm();
+    private Node[] parseExpressionOperation() throws Exception {
+        Node first= parseTerm()[0];
         Token secondToken = lex.getToken();
         Node second = new StatementNode(secondToken);
         Node third = parseExpression();
@@ -121,28 +148,60 @@ public class Parser {
         return new Node[] {first, second, third};
     }
 
-    private Node parseTerm() {
+    private Node[] parseTerm() throws Exception {
         Token token = lex.getToken();
         Token nextToken = lex.getToken();
-
+        Node[] children;
         if(nextToken.getDetails().equals("*")
                 || nextToken.getDetails().equals("/")){
-            lex.putBack(token);
             lex.putBack(nextToken);
-            parseTermOperation();
+            lex.putBack(token);
+           children = parseTermOperation();
         } else {
-
+            lex.putBack(nextToken);
+            lex.putBack(token);
+            children = parseFactor();
         }
+        return children;
     }
 
-    private Node[] parseTermOperation () {
+    private Node[] parseTermOperation () throws Exception {
+        Node first = parseFactor()[0];
+        Node second = new StatementNode(lex.getToken());
+        Node[] thirdChildren = parseTerm();
 
+        Node third = null;
+        if(thirdChildren.length == 2) {
+            third = thirdChildren[0];
+        } else{
+            throw new Exception("Amt of node children expected was different: " + thirdChildren.length);
+        }
 
-        return new Node[0];
+        return new Node[] { first, second, third};
     }
 
-    private Node[] parseFactor() {
-        return null;
+    private Node[] parseFactor() throws Exception {
+        Token token = lex.getToken();
+        Node first = null;
+        Node second = null;
+        if(token.isKind("digit")
+                || token.isKind("id")) {
+            first = new StatementNode(token);
+        } else if(token.getDetails().equals("(")){ //TODO: I think this is creating the extra
+            // expression node
+            first = parseExpression();
+        } else if(token.getDetails().equals("-")) {
+            first = new StatementNode(token);
+            second = parseFactor()[0];
+        } else if(token.isKind("bif")) {
+            first = new StatementNode(token);
+            second = parseExpression();
+        } else {
+            throw new Exception("Unrecongized factor: " + token.getKind() + " " + token
+                    .getDetails());
+        }
+
+        return new Node[] {first, second};
     }
 
 
