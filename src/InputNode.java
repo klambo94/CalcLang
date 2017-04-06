@@ -8,8 +8,8 @@ import java.util.Scanner;
 public class InputNode extends Node{
 
 
-    public InputNode (String kind, Node one, Node two) {
-        super(kind, one, two);
+    public InputNode (String kind, Node one, Node two, boolean doPrintNode) {
+        super(kind, one, two, doPrintNode);
     }
 
     @Override

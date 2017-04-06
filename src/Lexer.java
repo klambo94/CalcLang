@@ -108,7 +108,7 @@ public class Lexer {
                     state = 6;
 
                 } else if(state == 6){ //
-                    if(isLetter(sym) || sym == '=' || sym == ' ' ) {
+                    if(isPrintable(sym)) {
                         state = 6;
                         data += (char) sym;
                     } else if(sym == '"'){
@@ -168,7 +168,7 @@ public class Lexer {
             token = new Token("eof", "");
             return token;
         } else {
-            error("Lexer FA halted at inappropriate state: " + state + "with data: " + data);
+            error("Lexer FA halted at inappropriate state: " + state + " with data: " + data);
             return null;
         }
     }
@@ -235,6 +235,9 @@ public class Lexer {
         return code==10 || code==13 || code==32 ;
     }
 
+    private boolean isPrintable(int code) {
+        return (' '<=code && code<='~') &&  '"' != code;
+    }
     private static void error( String message ) {
         System.out.println( message );
         System.exit(1);

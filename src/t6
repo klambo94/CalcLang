@@ -1,2 +1,10 @@
-input "a= " a
-input "b= " b
+;x = sin ()
+;a = 5
+b = 52 - 5
+c = b * b
+show c
+newline
+x = sin (c)
+show x
+newline
+

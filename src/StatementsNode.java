@@ -3,8 +3,9 @@
  */
 public class StatementsNode extends Node {
 
-    public StatementsNode (String kind, Node first, Node second) {
-        super(kind, first, second);
+    public StatementsNode (String kind, Node first, boolean doPrintNode) {super(kind, first, doPrintNode);}
+    public StatementsNode (String kind, Node first, Node second, boolean doPrintNode) {
+        super(kind, first, second, doPrintNode);
     }
 
     @Override

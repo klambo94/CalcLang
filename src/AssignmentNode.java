@@ -4,8 +4,8 @@
  */
 public class AssignmentNode extends Node {
 
-    public AssignmentNode(String kind, Node left, Node right) {
-        super(kind, left, right);
+    public AssignmentNode (String kind, Node left, Node right, boolean doPrintNode) {
+        super(kind, left, right, doPrintNode);
     }
 
     @Override
@@ -13,7 +13,7 @@ public class AssignmentNode extends Node {
         if(variableMemoryMap != null
                 && this.first !=  null && this.second != null) {
             String variable = this.first.info;
-            double value = new ExpressionNode("Expression Node", second).executeNodeForReturn();
+            double value = new ExpressionNode(second.kind, second, false).executeNodeForReturn();
             variableMemoryMap.put(variable, value);
         }
     }

@@ -3,104 +3,115 @@
  */
 public class ExpressionNode extends Node {
 
-    public ExpressionNode (Token token) {
-        super(token);
+    public ExpressionNode (Token token, boolean doPrintNode) {
+        super(token,doPrintNode );
     }
 
-    public ExpressionNode(String kind, Node one){
-        super(kind, one);
+    public ExpressionNode (String kind, Node one, boolean doPrintNode){
+        super(kind, one, doPrintNode);
     }
 
-    public ExpressionNode(String kind, Node one, Node two) {
-        super(kind, one, two);
+    public ExpressionNode (String kind, Node one, Node two, boolean doPrintNode) {
+        super(kind, one, two,doPrintNode );
     }
 
-    public ExpressionNode (String kind, Node one, Node two, Node three) {
-        super(kind, one, two, three);
+    public ExpressionNode (String kind, Node one, Node two, Node three, boolean doPrintNode) {
+        super(kind, one, two, three, doPrintNode);
     }
 
     public void executeNode() throws Exception {
 
     }
 
-    public double executeNodeForReturn () throws Exception {
+    public double executeNodeForReturn() throws Exception {
         String kind = this.kind;
         Node[] children = this.getChildren();
-        if(kind.equals("Expression Node")) {
+
+        if(kind.equals("BIF Expression Node")) {
+            if(children.length == 1) {
+                children = children[0].getChildren();
+
+                if(children.length == 1) {
+                    return executeTerm(children[0]);
+                } else {
+                    throw new Exception("Unrecognized amount of children for BIF Expression");
+                }
+            } else {
+                throw new Exception("Unrecognized amount of children for BIF expression");
+            }
+        } else if(kind.contains("Expression")) {
+
             if (children.length == 1) {
-                return executeTerm(children[0]);
-            } else if( children.length == 2) {
-              return executeTerm(this);
-            } else if(children.length == 3) {
-                return executeExpressionOperationStatement();
+                String childKind = children[0].kind;
+
+                if(childKind.equals("Expression Statement Node")) {
+                    return parseExpressionStatement(children[0]);
+                } else {
+                    return executeTerm(children[0]);
+                }
             } else {
                 throw new Exception("Unrecognized Amt of children: " + children.length);
+
             }
         } else {
             return executeTerm(this);
         }
     }
 
-    private double executeExpressionOperationStatement () throws Exception {
-        double operandOne = executeTerm(first);
-        String operation = second.info;
-        double operandTwo = new ExpressionNode(third.kind, third)
-                .executeNodeForReturn();
-
-        switch (operation) {
-            case "+":
-                return operandOne + operandTwo;
-            case "-":
-                return operandOne - operandTwo;
-            default:
-                throw new Exception("Unknown operation: " + operation);
-        }
-    }
-
-    private double executeTerm (Node node) throws Exception {
+    private double parseExpressionStatement(Node node) throws Exception { //TODO: Rename this to
+        // "executeExpressionStatement"
         Node[] children = node.getChildren();
+        if(children.length == 3) {
+            double operandOne = executeTerm(children[0]);
+            String operation = children[1].info;
+            double operandTwo = new ExpressionNode(children[2].kind, children[2], false)
+                    .executeNodeForReturn();
 
-        if(children.length == 0) {
-            return executeFactor(node);
-        } else if(children.length == 1){
-            return executeFactor(children[0]);
-        } else if(children.length == 2) {
-            if(children[0].kind.equals("mathSym")){
-                return executeNegativeFactor(children[1]);
-            } else if(children[0].kind.equals("bif")) {
-                return executeFactor(children);
-            } else {
-                throw new Exception("Unrecongized kind for node containing 2 children: " +
-                        children[0].kind);
+            switch (operation) {
+                case "+":
+                    return operandOne + operandTwo;
+                case "-":
+                    return operandOne - operandTwo;
+                default:
+                    throw new Exception("Unknown operation: " + operation);
             }
-        } else if(children.length == 3) {
-            return executeTermOperationStatement(children);
-        }
-        else {
-            throw new Exception ("Unrecognized amount of children for a term. Children: " +
+        } else {
+            throw new Exception("Unexpected amount of children to an expression node: " +
                     children.length);
         }
     }
 
-    private double executeNegativeFactor (Node child) throws Exception {
+    private double executeTerm(Node node) throws Exception {
+        Node[] children = node.getChildren();
 
-        try{
-            return -executeFactor(child);
-        } catch (NumberFormatException nfe) {
-            throw new Exception("Unable to parse info into a double: " + child.info);
+        if(children.length == 0) {
+            return executeFactor(node);
+        } else if(children.length == 1) {
+            return executeFactor(children[0]);
+        } else if(children.length == 2
+                && node.first.info.equals("-")){
+            return -executeFactor(children[1]);
+        } else if(children.length == 2
+                && node.first.kind.equals("bif")) {
+            return executeBuiltInFunction(node);
+        } else if(children.length == 3) {
+            return executeTermStatement(node);
+        }
+        else {
+            throw new Exception("Unrecognized amount of children for a term. Children: " +
+                    children.length);
         }
     }
 
-
-
-    private double executeTermOperationStatement (Node[] children) throws Exception {
+    private double executeTermStatement (Node node) throws Exception {
+        Node[] children = node.getChildren();
         if(children.length != 3) {
             throw new Exception("Unexpected amount of children:" + children);
         }
 
-        double operandOne = executeTerm(first.first);
-        String operation = first.second.info;
-        double operandTwo = new ExpressionNode(first.third.kind, first.third)
+        double operandOne = executeTerm(children[0]);
+        String operation = children[1].info;
+        double operandTwo = new ExpressionNode(children[2].kind, children[2], false)
                 .executeNodeForReturn();
 
         switch (operation) {
@@ -111,10 +122,9 @@ public class ExpressionNode extends Node {
             default:
                 throw new Exception("Unknown operation: " + operation);
         }
-
     }
 
-    private double executeFactor (Node first) throws Exception{
+    private double executeFactor (Node first) throws Exception {
         String kind = first.kind;
         String info = first.info;
         try {
@@ -123,6 +133,8 @@ public class ExpressionNode extends Node {
             } else if (kind.equals("id")) {
                 if (variableMemoryMap != null && variableMemoryMap.containsKey(info)) {
                     return variableMemoryMap.get(info);
+                } else {
+                    throw new Exception("No variable found with id: " + info);
                 }
             } else {
                 throw new Exception("Unrecognized factor with kind: " + kind);
@@ -130,29 +142,17 @@ public class ExpressionNode extends Node {
         } catch (NumberFormatException nfe) {
             throw new Exception("Unable to parse digit into a double: " + info);
         }
-        throw new Exception("Did not find a match for factor with kind: " + kind);
     }
 
-    private double executeFactor(Node[] children) throws Exception {
-       if(children.length != 2){
-           throw new Exception("Unexpected amount of children in execute factor");
-       }
-        String kind = children[0].kind;
+    private double executeBuiltInFunction (Node node) throws Exception {
+        Node[] children = node.getChildren();
 
-        if(kind.equals("bif")) {
-            return executeBuiltInFunction(children);
-        } else {
-            throw new Exception("Unrecognized factor with kind: " + kind);
-        }
-    }
-
-    private double executeBuiltInFunction (Node[] children) throws Exception {
         if(children.length != 2){
             throw new Exception("Unexpected amount of children in execute built in function");
         }
 
         String function = children[0].info;
-        double expression = new ExpressionNode(children[1].kind, children[1])
+        double expression = new ExpressionNode("BIF Expression Node", children[1],false)
                 .executeNodeForReturn();
         switch (function) {
             case "sin":
@@ -165,6 +165,4 @@ public class ExpressionNode extends Node {
                 throw new Exception("Unrecognized built in function: " + function);
         }
     }
-
-
 }

@@ -14,6 +14,7 @@ public class CalcLang {
 
         Node root = parser.parseStatements();
         root.executeNode();
+
         TreeViewer viewer = new TreeViewer("Parse Tree", 0, 0, 800, 500, root );
 
     }

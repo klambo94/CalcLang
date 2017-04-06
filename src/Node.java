@@ -30,42 +30,53 @@ public abstract class Node {
      * @param one Left most child
      * @param two middle child
      * @param three right most child
+     * @param doPrintNode
      */
-    public Node( String kind, Node one, Node two, Node three) {
+    public Node (String kind, Node one, Node two, Node three, boolean doPrintNode) {
         this.kind = kind;  info = "";
         first = one;  second = two;  third = three;
         id = count;
         count++;
-        System.out.println( this );
+        if(doPrintNode){
+            System.out.println( this );
+        }
+
     }
 
-    public Node(String kind, Node one, Node two) {
+    public Node (String kind, Node one, Node two, boolean doPrintNode) {
         this.kind = kind;  info = "";
         first = one;  second = two;
         id = count;
         count++;
-        System.out.println( this );
+        if(doPrintNode){
+            System.out.println( this );
+        }
     }
 
-    public Node(String kind, Node one){
+    public Node (String kind, Node one, boolean doPrintNode){
         this.kind = kind;  info = "";
         first = one;
         id = count;
         count++;
-        System.out.println( this );
+        if(doPrintNode){
+            System.out.println( this );
+        }
     }
 
     /**
      * Constructs a Node from a token.
      * Children are null.
      * @param token Token holding its kind and data
+     * @param doPrintNode
      */
-    public Node( Token token ) {
+    public Node (Token token, boolean doPrintNode) {
         kind = token.getKind();  info = token.getDetails();
         first = null;  second = null;  third = null;
         id = count;
         count++;
-        System.out.println( this );
+        if(doPrintNode){
+            System.out.println( this );
+        }
     }
 
     /**
@@ -78,6 +89,7 @@ public abstract class Node {
     }
 
     public abstract void executeNode() throws Exception;
+
 
     public Map<String, Double> getVariableMemoryMap() {
         return this.variableMemoryMap;
