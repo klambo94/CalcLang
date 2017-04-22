@@ -13,8 +13,8 @@ public class Parser {
         lex = lexer;
     }
 
+
     public Node parseStatements() throws Exception {
-        System.out.println("----------------------> Parsing Statements");
         Token token = lex.getToken();
         Node first = null;
         Node second = null;
@@ -29,16 +29,15 @@ public class Parser {
             System.out.println(e.getMessage());
         }
         if(first != null && second == null) {
-            return new StatementsNode("Statements", first, true);
+            return new StatementsNode("Statements", first);
         } else if(first != null && second != null) {
-            return new StatementsNode("Statements", first, second, true);
+            return new StatementsNode("Statements", first, second);
         } else {
             return null;
         }
     }
 
     public Node parseStatement() throws Exception {
-        System.out.println("----------------------> Parsing Statement");
         Node first = null;
         Token token = lex.getToken();
 
@@ -52,12 +51,11 @@ public class Parser {
             System.out.println("consuming unneeded symbol: " + token.getDetails());
         }
 
-        return new StatementNode("Statement" , first, true);
+        return new StatementNode("Statement" , first);
 
     }
 
     private Node createKeyWordNode () throws Exception {
-        System.out.println("----------------------> Creating Display Node");
         Token token = lex.getToken();
         String tokenDetails = token.getDetails();
 
@@ -68,41 +66,39 @@ public class Parser {
 
             if(tokenDetails.equals("msg")){
                 token = lex.getToken();
-                return new DisplayNode("msg", new StatementNode(token, true), true);
+                return new DisplayNode("msg", new StatementNode(token));
             } else if(tokenDetails.equals("show")) {
                 Node first = parseExpression();
-                return new DisplayNode("show", first, true);
+                return new DisplayNode("show", first);
             } else {
-                return  new DisplayNode("newline", new StatementNode(token, true), true);
+                return  new DisplayNode("newline", new StatementNode(token));
             }
 
         } else if(tokenDetails.equals("input")){
             Token displayString = lex.getToken();
             Token inputVar = lex.getToken();
 
-            return  new InputNode("Input", new StatementNode(displayString, true), new
-                    StatementNode(inputVar, true), true);
+            return  new InputNode("Input", new StatementNode(displayString), new
+                    StatementNode(inputVar), true);
         } else {
             throw new Exception("Reached an unknown keyword: " + tokenDetails);
         }
     }
 
     private Node createAssignmentNode () throws Exception {
-        System.out.println("----------------------> Creating Assignment Node");
         Token token = lex.getToken();
         String token2Details = lex.getToken().getDetails();
         if(token2Details.equals("=")){
-          Node first = new StatementNode(token, true);
+          Node first = new StatementNode(token);
           Node second = parseExpression();
 
-            return new AssignmentNode("Assignment", first, second, true);
+            return new AssignmentNode("Assignment", first, second);
         } else {
             throw new Exception("Unknown id case: " + token2Details);
         }
     }
 
     private Node parseExpression()  throws Exception {
-        System.out.println("----------------------> Parsing Expression");
         Token token = lex.getToken();
         Node first = null; Node second = null; Node third = null;
         lex.putBack(token);
@@ -114,7 +110,7 @@ public class Parser {
                 || nextToken.getDetails().equals("-")){
             kind = "Expression Statement Node";
             first = turnNodeArrayIntoNode(terms, "Term");
-            second = new StatementNode(nextToken, true);
+            second = new StatementNode(nextToken);
             third = parseExpression();
         } else {
             kind = "Expression Node";
@@ -135,27 +131,44 @@ public class Parser {
 
 
         if(first != null && second == null && third == null){
-            return new ExpressionNode(kind, first, true);
+            return new ExpressionNode(kind, first);
         } else if(first != null && second != null && third == null) {
-            return new ExpressionNode(kind, first, second, true);
+            return new ExpressionNode(kind, first, second);
         } else if(first != null && second != null && third != null){
-            return new ExpressionNode(kind, first, second, third, true);
+            return new ExpressionNode(kind, first, second, third);
         } else {
             throw new Exception("Unexpected amount of nodes: " + terms.length);
         }
     }
 
-    private Node[] parseTerm() throws Exception {
+    private Node[] parseTerm() throws Exception { //TODO: this is not catching the (a + b)* c
+        // case. Just parses (a + b)
 
         Token token = lex.getToken();
         Token nextToken = lex.getToken();
-        if(nextToken.getDetails().equals("*")
+        if(token.getDetails().equals("(")) {
+            Node second = null, third = null;
+            lex.putBack(nextToken);
+            lex.putBack(token);
+            Node factorNode = turnNodeArrayIntoNode(parseFactor(), "Term");
+            nextToken = lex.getToken();
+
+            if(nextToken.getDetails().equals("*")
+                    || nextToken.getDetails().equals("/")) {
+                second = new StatementNode(nextToken);
+                third = turnNodeArrayIntoNode(parseTerm(), "Term");
+            } else {
+                lex.putBack(nextToken);
+            }
+
+            return new Node[] {factorNode, second, third};
+        } else if(nextToken.getDetails().equals("*")
                 || nextToken.getDetails().equals("/")){
             Node second= null;
             lex.putBack(nextToken);
             lex.putBack(token);
             Node first = turnNodeArrayIntoNode(parseFactor(), "Term");
-            second = new StatementNode(lex.getToken(),true );
+            second = new StatementNode(lex.getToken());
             Node third = turnNodeArrayIntoNode(parseTerm(), "Term");
 
             return new Node[] {first, second, third};
@@ -183,9 +196,9 @@ public class Parser {
         if(first != null && second == null){
             return first;
         } else if(first != null && second != null && third == null) {
-            return new StatementNode(kind, first, second, true);
+            return new StatementNode(kind, first, second);
         } else if(first != null && second != null && third != null) {
-            return new StatementNode(kind, first, second, third, true);
+            return new StatementNode(kind, first, second, third);
         } else {
             throw new Exception("Unexpected amount of nodes in array:" + nodes.length);
         }
@@ -197,14 +210,24 @@ public class Parser {
         Token token = lex.getToken();
         Node first = null;
         Node second = null;
+        Node third = null;
         if(token.isKind("id")
                 || token.isKind("digit")) {
-            first = new StatementNode(token, true);
+            first = new StatementNode(token);
         } else if(token.getDetails().equals("-")) {
-            first = new StatementNode(token, true);
+            first = new StatementNode(token);
             Node[] nodes = parseFactor();
-            if(nodes.length >= 1){
-                second = nodes[0];
+
+            if(nodes.length == 3) {
+                second = new StatementNode(nodes[0].kind, nodes[0], nodes[1], nodes[2]);
+            } else {
+                if(nodes.length >= 1){
+                    second = nodes[0];
+                }
+
+                if(nodes.length >= 2){
+                    third = nodes[1];
+                }
             }
         } else if(token.getDetails().equals("(")){
             first = parseExpression();
@@ -214,35 +237,19 @@ public class Parser {
                         token.getDetails());
             }
         } else if(token.isKind("bif")) {
-            first = new StatementNode(token, true);
+            first = new StatementNode(token);
             second = parseExpression();
         }
 
         if(first != null && second == null) {
             return new Node[] {first};
-        } else if(first != null && second != null) {
+        } else if(first != null && second != null && third == null) {
             return new Node[] {first, second};
+        } else if(first != null && second != null && third != null) {
+            return new Node[] {first, second, third};
         } else {
             throw new Exception("First and second node factors are null.");
         }
 
     }
-
-
-    // check whether token is correct kind
-    private void errorCheck( Token token, String kind ) {
-        if( ! token.isKind( kind ) ) {
-            System.out.println("Error:  expected " + token + " to be of kind " + kind );
-            System.exit(1);
-        }
-    }
-
-    // check whether token is correct kind and details
-    private void errorCheck( Token token, String kind, String details ) {
-        if( ! token.isKind( kind ) || ! token.getDetails().equals( details ) ) {
-            System.out.println("Error:  expected " + token + " to be kind=" + kind + " and details=" + details );
-            System.exit(1);
-        }
-    }
-
 }

@@ -9,7 +9,7 @@ public class InputNode extends Node{
 
 
     public InputNode (String kind, Node one, Node two, boolean doPrintNode) {
-        super(kind, one, two, doPrintNode);
+        super(kind, one, two);
     }
 
     @Override

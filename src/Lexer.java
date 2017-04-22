@@ -177,7 +177,6 @@ public class Lexer {
       Token token = null;
        try {
            token = getNext();
-           System.out.println("                                   got token: " + token);
 
        } catch (Exception e) {
          System.out.println("Exception caught:" + e.getMessage());
@@ -186,7 +185,6 @@ public class Lexer {
     }
 
     public void putBack( Token token ) {
-        System.out.println( margin + "put back token " + token.toString() );
         stack.push( token );
     }
 
@@ -253,7 +251,6 @@ public class Lexer {
 
         do{
             token = lex.getNext();
-            System.out.println( token.toString() );
         }while( ! token.getKind().equals( "eof" )  );
 
     }

@@ -30,53 +30,41 @@ public abstract class Node {
      * @param one Left most child
      * @param two middle child
      * @param three right most child
-     * @param doPrintNode
      */
-    public Node (String kind, Node one, Node two, Node three, boolean doPrintNode) {
+    public Node (String kind, Node one, Node two, Node three) {
         this.kind = kind;  info = "";
         first = one;  second = two;  third = three;
         id = count;
         count++;
-        if(doPrintNode){
-            System.out.println( this );
-        }
+
 
     }
 
-    public Node (String kind, Node one, Node two, boolean doPrintNode) {
+    public Node (String kind, Node one, Node two) {
         this.kind = kind;  info = "";
         first = one;  second = two;
         id = count;
-        count++;
-        if(doPrintNode){
-            System.out.println( this );
-        }
+
     }
 
-    public Node (String kind, Node one, boolean doPrintNode){
+    public Node (String kind, Node one){
         this.kind = kind;  info = "";
         first = one;
         id = count;
         count++;
-        if(doPrintNode){
-            System.out.println( this );
-        }
     }
 
     /**
      * Constructs a Node from a token.
      * Children are null.
      * @param token Token holding its kind and data
-     * @param doPrintNode
+     *
      */
-    public Node (Token token, boolean doPrintNode) {
+    public Node (Token token) {
         kind = token.getKind();  info = token.getDetails();
         first = null;  second = null;  third = null;
         id = count;
         count++;
-        if(doPrintNode){
-            System.out.println( this );
-        }
     }
 
     /**

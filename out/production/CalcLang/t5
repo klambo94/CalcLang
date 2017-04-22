@@ -6,3 +6,9 @@
 x = -52.456
 y = 52.809434
 z = x / y
+
+show x
+newline
+show y
+newline
+show z

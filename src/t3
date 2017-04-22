@@ -1,4 +1,6 @@
 ; pythagorean theorem
+; this has failed at unknown operation "+"
+c = 4
 input "a= " a
 input "b= " b
 c = sqrt( a*a + b*b )

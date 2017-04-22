@@ -3,20 +3,16 @@
  */
 public class ExpressionNode extends Node {
 
-    public ExpressionNode (Token token, boolean doPrintNode) {
-        super(token,doPrintNode );
+    public ExpressionNode (String kind, Node one){
+        super(kind, one);
     }
 
-    public ExpressionNode (String kind, Node one, boolean doPrintNode){
-        super(kind, one, doPrintNode);
+    public ExpressionNode (String kind, Node one, Node two) {
+        super(kind, one, two);
     }
 
-    public ExpressionNode (String kind, Node one, Node two, boolean doPrintNode) {
-        super(kind, one, two,doPrintNode );
-    }
-
-    public ExpressionNode (String kind, Node one, Node two, Node three, boolean doPrintNode) {
-        super(kind, one, two, three, doPrintNode);
+    public ExpressionNode (String kind, Node one, Node two, Node three) {
+        super(kind, one, two, three);
     }
 
     public void executeNode() throws Exception {
@@ -31,7 +27,9 @@ public class ExpressionNode extends Node {
             if(children.length == 1) {
                 children = children[0].getChildren();
 
-                if(children.length == 1) {
+                if(children[0].kind.equals("Expression Statement Node")) {
+                    return executeExpressionStatement(children[0]);
+                } else if(children.length == 1) {
                     return executeTerm(children[0]);
                 } else {
                     throw new Exception("Unrecognized amount of children for BIF Expression");
@@ -45,7 +43,7 @@ public class ExpressionNode extends Node {
                 String childKind = children[0].kind;
 
                 if(childKind.equals("Expression Statement Node")) {
-                    return parseExpressionStatement(children[0]);
+                    return executeExpressionStatement(children[0]);
                 } else {
                     return executeTerm(children[0]);
                 }
@@ -53,18 +51,19 @@ public class ExpressionNode extends Node {
                 throw new Exception("Unrecognized Amt of children: " + children.length);
 
             }
+        } else if(kind.equals("Term") && children.length == 1){
+            return executeTerm(children[0]);
         } else {
             return executeTerm(this);
         }
     }
 
-    private double parseExpressionStatement(Node node) throws Exception { //TODO: Rename this to
-        // "executeExpressionStatement"
+    private double executeExpressionStatement (Node node) throws Exception {
         Node[] children = node.getChildren();
         if(children.length == 3) {
             double operandOne = executeTerm(children[0]);
             String operation = children[1].info;
-            double operandTwo = new ExpressionNode(children[2].kind, children[2], false)
+            double operandTwo = new ExpressionNode(children[2].kind, children[2])
                     .executeNodeForReturn();
 
             switch (operation) {
@@ -88,19 +87,47 @@ public class ExpressionNode extends Node {
             return executeFactor(node);
         } else if(children.length == 1) {
             return executeFactor(children[0]);
-        } else if(children.length == 2
+        } else if((children.length == 2
+                || children.length == 3)
                 && node.first.info.equals("-")){
-            return -executeFactor(children[1]);
+            if(children.length == 2){
+                return -executeFactor(children[1]);
+            } else {
+                return - -executeFactor(children[2]);
+            }
+
         } else if(children.length == 2
                 && node.first.kind.equals("bif")) {
             return executeBuiltInFunction(node);
         } else if(children.length == 3) {
-            return executeTermStatement(node);
+
+            if(children[0].kind.equals("Expression Statement Node")){
+                double operandOne = executeExpressionStatement(children[0]);
+                return executeTermStatement(operandOne, children[1], children[2]);
+            }
+             return executeTermStatement(node);
         }
         else {
             throw new Exception("Unrecognized amount of children for a term. Children: " +
                     children.length);
         }
+    }
+
+    private double executeTermStatement (double operandOne, Node second, Node third) throws Exception {
+        String operation = second.info;
+        double operandTwo = new ExpressionNode(third.kind, third)
+                .executeNodeForReturn();
+
+        switch (operation) {
+            case "*":
+                return operandOne * operandTwo;
+            case "/":
+                return operandOne / operandTwo;
+
+            default:
+                throw new Exception("Unknown operation: " + operation);
+        }
+
     }
 
     private double executeTermStatement (Node node) throws Exception {
@@ -109,9 +136,9 @@ public class ExpressionNode extends Node {
             throw new Exception("Unexpected amount of children:" + children);
         }
 
-        double operandOne = executeTerm(children[0]);
+        double operandOne =  executeTerm(children[0]);
         String operation = children[1].info;
-        double operandTwo = new ExpressionNode(children[2].kind, children[2], false)
+        double operandTwo = new ExpressionNode(children[2].kind, children[2])
                 .executeNodeForReturn();
 
         switch (operation) {
@@ -119,6 +146,7 @@ public class ExpressionNode extends Node {
                 return operandOne * operandTwo;
             case "/":
                 return operandOne / operandTwo;
+
             default:
                 throw new Exception("Unknown operation: " + operation);
         }
@@ -128,6 +156,20 @@ public class ExpressionNode extends Node {
         String kind = first.kind;
         String info = first.info;
         try {
+
+            if(kind.equals("Expression Node")){
+                Node[] children = first.getChildren();
+                if(children.length == 1) {
+                    return executeFactor(children[0]);
+                }
+            }
+            if(kind.equals("mathSym")) {
+                Node[] children = first.getChildren();
+                if(children.length == 3){
+
+                    return - -executeFactor(children[2]);
+                }
+            }
             if (kind.equals("digit")) {
                 return Double.parseDouble(info);
             } else if (kind.equals("id")) {
@@ -152,7 +194,7 @@ public class ExpressionNode extends Node {
         }
 
         String function = children[0].info;
-        double expression = new ExpressionNode("BIF Expression Node", children[1],false)
+        double expression = new ExpressionNode("BIF Expression Node", children[1])
                 .executeNodeForReturn();
         switch (function) {
             case "sin":

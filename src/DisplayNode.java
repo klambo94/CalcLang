@@ -4,8 +4,8 @@
  */
 public class DisplayNode extends Node {
 
-    public DisplayNode (String kind, Node one, boolean doPrintNode) {
-        super(kind, one, doPrintNode);
+    public DisplayNode (String kind, Node one) {
+        super(kind, one);
     }
 
     @Override
@@ -13,18 +13,19 @@ public class DisplayNode extends Node {
         String firstKind = (first != null) ? first.kind : null;
         String displayInfo = null;
 
-        if(!firstKind.equals("Expression Node")) {
+        if(!firstKind.equals("Expression Node")
+            && !firstKind.equals("Expression Statement Node")) {
             String firstInfo = first.info;
             if (firstKind.equals("string")) { //This is case for keyword message
                 displayInfo = firstInfo.replaceAll("\"", "");
             }  else if (kind.equals("newline")) {
                 displayInfo = "\n";
             } else {
-                error("The child is null. Nothing to display");
+                error("Unrecongized node");
             }
         } else {
             if (kind.equals("show")) {
-                displayInfo = String.valueOf(new ExpressionNode(first.kind, first, false)
+                displayInfo = String.valueOf(new ExpressionNode(first.kind, first)
                         .executeNodeForReturn());
             }
         }

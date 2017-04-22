@@ -1,5 +1,4 @@
-;x = sin ()
-;a = 5
+a = 5
 b = 52 - 5
 c = b * b
 show c
